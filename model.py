@@ -23,10 +23,19 @@ class Model:
 
         grid_graph = nx.grid_2d_graph(height, width)
 
+        node_color = {
+            1: 'b',
+            2: 'r',
+        }
+
         for i, line in enumerate(matrix):
             for j, item in enumerate(line):
                 if item == 0:
                     grid_graph.remove_node((i, j))
+                else:
+                    grid_graph.node[(i, j)]['color'] = node_color[item]
+
+        print(grid_graph.nodes(True))
 
         return Model(grid_graph, width, height)
 
@@ -34,7 +43,9 @@ class Model:
         pos = {node:(node[1], self.height-1-node[0])
                for node in self.graph.nodes()}
 
-        nx.draw(self.graph, pos)
+        node_color = [node[1]['color'] for node in self.graph.nodes(data=True)]
+
+        nx.draw(self.graph, pos, node_color=node_color)
         if filename:
             plt.savefig(filename)
         else:
