@@ -1,11 +1,10 @@
-from solver import Solver
-from model import Model
+from sketch_model import SketchModel
 
 
 def main():
-    model = Model.from_textfile('data/data.txt')
-    model.draw()
-    solver = Solver()
+    model = SketchModel.from_textfile('data/data.txt')
+    #model.draw()
+    model.solve()
 
 
 if __name__ == '__main__':
