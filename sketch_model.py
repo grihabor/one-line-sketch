@@ -26,12 +26,17 @@ class SketchModel:
         cur_node = self.start_node
         self.node_count = 1
         self.dup_graph = self.graph.copy()
+        self.removed_edges_list = []
 
         def dfs(cur_node):
             if self.node_count == self.graph.number_of_nodes():
                 return True
 
+            removed_edges = self.dup_graph.edges([cur_node])
+            #print(removed_edges)
+            self.dup_graph.remove_edges_from(removed_edges)
             self.dup_graph.remove_node(cur_node)
+            self.removed_edges_list.append(removed_edges)
 
             number_connected_components = nx.number_connected_components(self.dup_graph)
 
@@ -52,8 +57,7 @@ class SketchModel:
             self.graph.node[cur_node]['color'] = 'b'
             self.node_count -= 1
 
-            # TODO: fix this line!!! (add not all edges, but only with existing nodes)
-            self.dup_graph.add_edges_from(self.graph.edges([cur_node]))
+            self.dup_graph.add_edges_from(self.removed_edges_list.pop())
 
             self.dup_graph.node[cur_node]['color'] = 'b'
             return False
