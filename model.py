@@ -1,12 +1,12 @@
 
 
 class Cell:
-    def __init__(self, left, top, right, bottom, active=False):
+    def __init__(self, left, top, right, bottom, status=0):
         self.left = left
         self.right = right
         self.top = top
         self.bottom = bottom
-        self.active = active
+        self.status = status
 
 
 class Model:
@@ -19,7 +19,10 @@ class Model:
 
     @classmethod
     def from_textfile(cls, filename):
-        pass
+        matrix = []
+        for line in filename:
+            matrix.append([int(item) for item in line.split()])
+        return Model.from_matrix(matrix)
 
     @classmethod
     def from_image(cls, filename):
