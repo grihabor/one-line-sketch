@@ -3,7 +3,7 @@ from model import Model
 
 
 def main():
-    model = Model()
+    model = Model.from_textfile('data/data.txt')
     solver = Solver()
 
 

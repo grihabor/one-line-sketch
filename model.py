@@ -1,3 +1,4 @@
+import networkx as nx
 
 
 class Cell:
@@ -15,13 +16,16 @@ class Model:
 
     @classmethod
     def from_matrix(cls, matrix):
-        pass
+        grid_graph = nx.grid_2d_graph(len(matrix), len(matrix[0]))
+        print(grid_graph)
+
 
     @classmethod
     def from_textfile(cls, filename):
         matrix = []
-        for line in filename:
-            matrix.append([int(item) for item in line.split()])
+        with open(filename, 'r') as f:
+            for line in f:
+                matrix.append([int(item) for item in line.split()])
         return Model.from_matrix(matrix)
 
     @classmethod
