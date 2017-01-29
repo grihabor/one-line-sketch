@@ -74,6 +74,7 @@ class SketchModel:
         print(path)
         solution = nx.Graph()
         solution.add_path(path)
+        solution.node[self.start_node]['color'] = 'r'
 
         self.draw([self.graph, solution])
 
