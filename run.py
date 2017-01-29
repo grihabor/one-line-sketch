@@ -2,7 +2,7 @@ from sketch_model import SketchModel
 
 
 def main():
-    model = SketchModel.from_textfile('data/data.txt')
+    model = SketchModel.from_textfile('data/expert/cheese.txt')
     #model.draw()
     model.solve()
 
