@@ -6,7 +6,7 @@ IMG_DATA_PATH = DATA_PATH + '/img'
 
 
 def main():
-    model = SketchModel.from_textfile(IMG_DATA_PATH + '/expert/rose.txt')
+    model = SketchModel.from_textfile(TXT_DATA_PATH + '/expert/rose.txt')
     #model.draw()
     model.solve()
 

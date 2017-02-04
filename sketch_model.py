@@ -34,15 +34,16 @@ class SketchModel:
         self.dup_graph.node[cur_node]['color'] = 'b'
 
     def solve(self):
-        cur_node = self.start_node
-        self.node_count = 1
+        node_count = 1
         self.dup_graph = self.graph.copy()
         self.removed_edges_list = []
 
         path = []
 
         def dfs(cur_node):
-            if self.node_count == self.graph.number_of_nodes():
+            nonlocal node_count
+
+            if node_count == self.graph.number_of_nodes():
                 path.append(cur_node)
                 return True
 
@@ -54,30 +55,28 @@ class SketchModel:
                                if self.dup_graph.degree(node) == 1)
             print(number_connected_components, leaves_count)
 
-            #self.draw(True)
-
             if number_connected_components == 1 and leaves_count <= 2:
                 for neighbor_node in self.graph.neighbors_iter(cur_node):
                     if self.graph.node[neighbor_node]['color'] == 'b':
                         self.graph.node[neighbor_node]['color'] = 'r'
-                        self.node_count += 1
+                        node_count += 1
                         if dfs(neighbor_node):
                             path.append(cur_node)
                             return True
 
             self.graph.node[cur_node]['color'] = 'b'
-            self.node_count -= 1
+            node_count -= 1
             self._dup_restore_node(cur_node)
             return False
 
-        print(dfs(cur_node))
+        print(dfs(self.start_node))
         print(path)
         solution = nx.Graph()
         solution.add_path(path)
         solution.node[self.start_node]['color'] = 'r'
+        self.solution = solution
 
         self.draw([self.graph, solution])
-
 
     @classmethod
     def from_matrix(cls, matrix):
