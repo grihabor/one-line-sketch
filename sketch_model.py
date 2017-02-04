@@ -39,6 +39,7 @@ class AuxiliaryGraph:
         print(connected_components_count, leaves_count)
         return connected_components_count == 1 and leaves_count <= 2
 
+
 class SketchModel:
     def __init__(self, graph : nx.Graph, start_node=None, width=None, height=None):
         self.graph = graph
@@ -84,8 +85,6 @@ class SketchModel:
         solution.node[self.start_node]['color'] = 'r'
         self.solution = solution
 
-        self.draw([self.graph, solution])
-
     @classmethod
     def from_matrix(cls, matrix):
         width, height = len(matrix[0]), len(matrix)
@@ -114,7 +113,10 @@ class SketchModel:
         return {node: (node[1], self.height-1-node[0])
                 for node in graph.nodes()}
 
-    def draw(self, graphs, filename=None):
+    def draw(self):
+        self._draw([self.graph, self.solution])
+
+    def _draw(self, graphs, filename=None):
 
         def node_color(graph):
             return [node[1]['color'] if 'color' in node[1] else 'b'
@@ -124,8 +126,8 @@ class SketchModel:
 
         for i, graph in enumerate(graphs):
             plt.subplot(1, len(graphs), 1+i)
-            nx.draw(graph, self._pos(graph),
-                    node_color=node_color(graph))
+            nx.draw(graph, self._pos(graph), node_color=node_color(graph),
+                    node_size=150, width=3)
 
         if filename:
             plt.savefig(filename)
