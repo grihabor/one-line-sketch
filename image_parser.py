@@ -8,40 +8,25 @@ from skimage.io import imread
 import matplotlib.pyplot as plt
 import numpy as np
 
-from utils import smooth, find_nearest_index
+from utils import smooth, find_nearest_value_index
 
 
 class ImageParser:
     def __init__(self):
         self._matrix = None
 
-    def parse(self, filename):
-        img = imread(filename)
-        img = rgb2gray(img)
-        #print(img.shape)
-        #img = threshold_adaptive(img, 51)
-        img = sobel(img)
-        row_sum = np.sum(img, axis=1)
-        #print(len(row_sum), row_sum)
+    def _get_rows(self, grayscale_img, draw_plots=False):
+        gradient_magnitude = sobel(grayscale_img)
+        # sum up rows of gradients, so that local maximas
+        # of resulting arrays are equal cell rows coordinates
+        gradient_y_projection = np.sum(gradient_magnitude, axis=1)
+        # smooth the array to get nice local maximas
+        gradient_y_projection = smooth(gradient_y_projection, 11)  # TODO: switch to coef*height
 
-        plt.subplot(121)
-        row_sum = smooth(row_sum, 11)
-
-
-        plt.plot(row_sum)
-
-
-
-        max_indices = argrelextrema(row_sum, np.greater)[0]
-
-
-        middle_point = img.shape[0] // 2
-        index = find_nearest_index(max_indices, middle_point)
-        print(max_indices)
-        print(index)
-        diff = np.roll(max_indices, -1) - max_indices
-        print(diff)
-        print(diff[index])
+        local_max_indices = argrelextrema(gradient_y_projection, np.greater)[0]
+        height_middle = gradient_magnitude.shape[0] // 2
+        index = find_nearest_value_index(local_max_indices, height_middle)
+        diff = np.roll(local_max_indices, -1) - local_max_indices
 
         start_i, end_i = index, index
         threshold = diff[index] * 0.3
@@ -50,13 +35,26 @@ class ImageParser:
         while np.abs(diff[end_i] - diff[index]) < threshold:
             end_i += 1
 
-        max_indices = max_indices[start_i+1:end_i+1]
+        local_max_indices = local_max_indices[start_i + 1:end_i + 1]
 
-        plt.scatter(max_indices, np.ones(len(max_indices)), c='r')
+        if draw_plots:
+            plt.plot(gradient_y_projection)
+            plt.scatter(local_max_indices, np.ones(len(local_max_indices)), c='r')
+
+        return local_max_indices
+
+    def parse(self, filename):
+        img = imread(filename)
+        grayscale_img = rgb2gray(img)
+
+        plt.figure(figsize=(12, 8))
+        plt.subplot(121)
+        rows = self._get_rows(grayscale_img, True)
+        print(rows)
 
         plt.subplot(122)
         plt.imshow(img)
-        #print(img)
+
         plt.show()
 
     @property

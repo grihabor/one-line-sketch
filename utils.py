@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def find_nearest_index(array,value):
+def find_nearest_value_index(array, value):
     idx = (np.abs(array-value)).argmin()
     return idx
 
