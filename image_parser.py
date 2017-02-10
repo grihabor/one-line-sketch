@@ -19,7 +19,7 @@ class ImageParser:
         self._threshold_range = 0.3
 
     def _smooth_param(self, img_size):
-        return img_size // 50
+        return img_size // 65
 
     def threshold(self, cell_size=None):
         if cell_size is None:
@@ -34,6 +34,7 @@ class ImageParser:
         # sum up rows of gradients, so that local maximas
         # of resulting arrays are equal cell rows coordinates
         gradient_y_projection = np.sum(gradient_magnitude, axis=1)
+
 
         local_max_indices = get_local_maximas(gradient_y_projection,
                                               self._smooth_param(grayscale_img.shape[1]))

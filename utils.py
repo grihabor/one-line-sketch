@@ -1,3 +1,6 @@
+import warnings
+from functools import wraps
+
 import numpy as np
 from scipy.signal import argrelextrema
 
@@ -13,6 +16,17 @@ def lax_compare(param):
     return comp
 
 
+def print_return_value(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        ret = func(*args, **kwargs)
+        print(func.__name__)
+        print(ret)
+        return ret
+    return wrapper
+
+
+@print_return_value
 def get_local_maximas(arr, smooth_param):
     # smooth the array to get nice local maximas
     arr = smooth(
@@ -20,6 +34,46 @@ def get_local_maximas(arr, smooth_param):
     )
 
     return argrelextrema(arr, np.greater)[0]
+
+
+def slices(arr, slice_len=3):
+    for i in range(len(arr) - slice_len):
+        t = arr[i : i + slice_len]
+        print(t.shape)
+        yield t
+    for i in range(len(arr) - slice_len, len(arr)):
+        t = np.append(arr[i:], arr[:slice_len - (len(arr) - i)])
+        print(t.shape)
+        yield t
+
+
+@print_return_value
+def local_maximas(arr, window_len):
+
+    arr = smooth(
+        arr, window_len=window_len
+    )
+
+
+    if window_len % 2 == 0:
+        warnings.warn('Use odd window_len')
+    window_len += 1
+
+    middle = window_len//2
+    maximas = np.zeros((len(arr)))
+    for i, slice in enumerate(slices(arr, window_len)):
+
+        if slice.mean()*1.2 > slice.max():
+            value = 2
+        else:
+            value = 1
+        maximas[(i + slice.argmax()) % len(maximas)] += value
+
+    print(maximas)
+    return np.where(maximas > 14)[0]
+
+
+#get_local_maximas = local_maximas
 
 
 def smooth(x, window_len=11, window='hanning'):
