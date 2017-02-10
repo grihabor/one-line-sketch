@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.signal import argrelextrema
 
 
 def find_nearest_value_index(array, value):
@@ -10,6 +11,15 @@ def lax_compare(param):
     def comp(a, b):
         return a + param > b
     return comp
+
+
+def get_local_maximas(arr, smooth_param):
+    # smooth the array to get nice local maximas
+    arr = smooth(
+        arr, window_len=smooth_param
+    )
+
+    return argrelextrema(arr, np.greater)[0]
 
 
 def smooth(x, window_len=11, window='hanning'):

@@ -8,7 +8,7 @@ from skimage.io import imread
 import matplotlib.pyplot as plt
 import numpy as np
 
-from utils import smooth, find_nearest_value_index, lax_compare
+from utils import smooth, find_nearest_value_index, lax_compare, get_local_maximas
 
 
 class ImageParser:
@@ -34,13 +34,10 @@ class ImageParser:
         # sum up rows of gradients, so that local maximas
         # of resulting arrays are equal cell rows coordinates
         gradient_y_projection = np.sum(gradient_magnitude, axis=1)
-        # smooth the array to get nice local maximas
-        gradient_y_projection = smooth(
-            gradient_y_projection,
-            window_len=self._smooth_param(grayscale_img.shape[1])
-        )
 
-        local_max_indices = argrelextrema(gradient_y_projection, np.greater)[0]
+        local_max_indices = get_local_maximas(gradient_y_projection,
+                                              self._smooth_param(grayscale_img.shape[1]))
+
         height_middle = gradient_magnitude.shape[0] // 2
         index = find_nearest_value_index(local_max_indices, height_middle)
         diff = np.roll(local_max_indices, -1) - local_max_indices
