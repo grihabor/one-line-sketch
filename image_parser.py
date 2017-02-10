@@ -15,14 +15,23 @@ class ImageParser:
     def __init__(self):
         self._matrix = None  # type: list[list[int]]
         self.img = None  # type: np.ndarray
-        self._threshold_range = 0.3
+        self._threshold = None
+        self._threshold_range = 0.2
 
     @property
     def _smooth_param(self):
         if self.img is None:
             raise AttributeError('Initialize self.img before using _smooth_param')
         return self.img.shape[0] // 115
-        
+
+    def threshold(self, cell_size=None):
+        if cell_size is None:
+            if self._threshold is None:
+                raise AttributeError('Pass to threshold() a cell_size before using it without one')
+        else:
+            self._threshold = cell_size * self._threshold_range
+        return self._threshold
+
     def _get_rows(self, grayscale_img, draw_plots=False):
         gradient_magnitude = sobel(grayscale_img)
         # sum up rows of gradients, so that local maximas
@@ -37,7 +46,7 @@ class ImageParser:
         diff = np.roll(local_max_indices, -1) - local_max_indices
 
         start_i, end_i = index, index
-        threshold = diff[index] * self._threshold_range
+        threshold = self.threshold(diff[index])
         while np.abs(diff[start_i] - diff[index]) < threshold:
             start_i -= 1
         while np.abs(diff[end_i] - diff[index]) < threshold:
@@ -59,7 +68,7 @@ class ImageParser:
         plt.subplot(131)
         rows = self._get_rows(grayscale_img, True)
 
-        cropped_grayscale = grayscale_img[rows[0]:rows[-1], :]
+        cropped_grayscale = grayscale_img[rows[0] - self.threshold() : rows[-1] + self.threshold(), :]
 
         plt.subplot(132)
         plt.imshow(cropped_grayscale, cmap='gray')
