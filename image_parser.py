@@ -135,8 +135,8 @@ class ImageParser:
             right = [arr[-1] + i * size for i in range(1, padding + 1)]
             return np.array(left + list(arr) + right, dtype=np.int32)
 
-        rows = pad_array(rows, 1, cell_size)
-        columns = pad_array(columns, 1, cell_size)
+        #rows = pad_array(rows, 3, cell_size)
+        columns = pad_array(columns, 3, cell_size)  # TODO: fix, this might fail
 
         cell_types = np.zeros((len(columns)-1, len(rows)-1))
 
