@@ -112,7 +112,8 @@ class ImageParser:
         def cells(img, rows, columns):
             for row, (left, right) in enumerate(pairwise(rows)):
                 for column, (top, bottom) in enumerate(pairwise(columns)):
-                    yield row, column, img[top:bottom, left:right]
+                    if top >= 0 and bottom < img.shape[0] and left >= 0 and right < img.shape[1]:
+                        yield row, column, img[top:bottom, left:right]
 
         def cell_type(cell):
             #plt.imshow(cell, cmap='gray')
@@ -124,6 +125,18 @@ class ImageParser:
                 return 1
             else:
                 return 2
+
+        cell_size = np.mean(rows[1:]-rows[:-1])
+        print('cell_size =', cell_size)
+        padding = 3
+
+        def pad_array(arr, padding, size):
+            left = [arr[0] - i * size for i in range(1, padding + 1)]
+            right = [arr[-1] + i * size for i in range(1, padding + 1)]
+            return np.array(left + list(arr) + right, dtype=np.int32)
+
+        rows = pad_array(rows, 1, cell_size)
+        columns = pad_array(columns, 1, cell_size)
 
         cell_types = np.zeros((len(columns)-1, len(rows)-1))
 
