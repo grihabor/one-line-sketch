@@ -13,15 +13,23 @@ from utils import smooth, find_nearest_value_index
 
 class ImageParser:
     def __init__(self):
-        self._matrix = None
+        self._matrix = None  # type: list[list[int]]
+        self.img = None  # type: np.ndarray
+        self._threshold_range = 0.3
 
+    @property
+    def _smooth_param(self):
+        if self.img is None:
+            raise AttributeError('Initialize self.img before using _smooth_param')
+        return self.img.shape[0] // 115
+        
     def _get_rows(self, grayscale_img, draw_plots=False):
         gradient_magnitude = sobel(grayscale_img)
         # sum up rows of gradients, so that local maximas
         # of resulting arrays are equal cell rows coordinates
         gradient_y_projection = np.sum(gradient_magnitude, axis=1)
         # smooth the array to get nice local maximas
-        gradient_y_projection = smooth(gradient_y_projection, 11)  # TODO: switch to coef*height
+        gradient_y_projection = smooth(gradient_y_projection, self._smooth_param)
 
         local_max_indices = argrelextrema(gradient_y_projection, np.greater)[0]
         height_middle = gradient_magnitude.shape[0] // 2
@@ -29,7 +37,7 @@ class ImageParser:
         diff = np.roll(local_max_indices, -1) - local_max_indices
 
         start_i, end_i = index, index
-        threshold = diff[index] * 0.3
+        threshold = diff[index] * self._threshold_range
         while np.abs(diff[start_i] - diff[index]) < threshold:
             start_i -= 1
         while np.abs(diff[end_i] - diff[index]) < threshold:
@@ -44,16 +52,20 @@ class ImageParser:
         return local_max_indices
 
     def parse(self, filename):
-        img = imread(filename)
-        grayscale_img = rgb2gray(img)
+        self.img = imread(filename)
+        grayscale_img = rgb2gray(self.img)
 
         plt.figure(figsize=(12, 8))
-        plt.subplot(121)
+        plt.subplot(131)
         rows = self._get_rows(grayscale_img, True)
-        print(rows)
 
-        plt.subplot(122)
-        plt.imshow(img)
+        cropped_grayscale = grayscale_img[rows[0]:rows[-1], :]
+
+        plt.subplot(132)
+        plt.imshow(cropped_grayscale, cmap='gray')
+
+        plt.subplot(133)
+        plt.imshow(self.img)
 
         plt.show()
 
