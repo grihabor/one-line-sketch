@@ -6,6 +6,12 @@ def find_nearest_value_index(array, value):
     return idx
 
 
+def lax_compare(param):
+    def comp(a, b):
+        return a + param > b
+    return comp
+
+
 def smooth(x, window_len=11, window='hanning'):
     """smooth the data using a window with requested size.
 
