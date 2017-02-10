@@ -1,3 +1,5 @@
+from itertools import tee
+
 import scipy
 from scipy.signal import argrelextrema
 from skimage.color import rgb2gray
@@ -8,7 +10,7 @@ from skimage.io import imread
 import matplotlib.pyplot as plt
 import numpy as np
 
-from utils import smooth, find_nearest_value_index, lax_compare, get_local_maximas
+from utils import smooth, find_nearest_value_index, lax_compare, get_local_maximas, print_return_value
 
 
 class ImageParser:
@@ -91,10 +93,44 @@ class ImageParser:
         plt.subplot(223)
         columns = self._get_columns(cropped_grayscale, True)
 
+        self._matrix = self.get_matrix(cropped_grayscale, rows - rows[0] + self.threshold(), columns)
+
         plt.subplot(224)
         plt.imshow(self.img)
 
         plt.show()
+
+    @print_return_value
+    def get_matrix(self, img, rows, columns):
+
+        def pairwise(iterable):
+            "s -> (s0,s1), (s1,s2), (s2, s3), ..."
+            a, b = tee(iterable)
+            next(b, None)
+            return zip(a, b)
+
+        def cells(img, rows, columns):
+            for row, (left, right) in enumerate(pairwise(rows)):
+                for column, (top, bottom) in enumerate(pairwise(columns)):
+                    yield row, column, img[top:bottom, left:right]
+
+        def cell_type(cell):
+            #plt.imshow(cell, cmap='gray')
+            #plt.show()
+            avg_intensity = np.mean(cell)
+            if avg_intensity > 0.9:
+                return 0
+            elif avg_intensity > 0.7:
+                return 1
+            else:
+                return 2
+
+        cell_types = np.zeros((len(columns)-1, len(rows)-1))
+
+        for row, column, cell in cells(img, rows, columns):
+            cell_types[column, row] = cell_type(cell)
+
+        return cell_types
 
     @property
     def matrix(self):

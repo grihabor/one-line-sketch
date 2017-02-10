@@ -6,7 +6,7 @@ IMG_DATA_PATH = DATA_PATH + '/img'
 
 
 def main():
-    model = SketchModel.from_image(IMG_DATA_PATH + '/001.jpg')
+    model = SketchModel.from_image(IMG_DATA_PATH + '/002.jpg')
     #model.draw()
     model.solve()
 
