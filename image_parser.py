@@ -1,16 +1,12 @@
-from itertools import tee
 from bisect import bisect_left
-import scipy
 from scipy.signal import argrelextrema
 from skimage.color import rgb2gray
 from skimage.filters import sobel
-from skimage.filters import threshold_adaptive
-from skimage.filters import threshold_otsu
 from skimage.io import imread
 import matplotlib.pyplot as plt
 import numpy as np
 
-from utils import smooth, find_nearest_value_index, lax_compare, get_local_maximas, print_return_value
+from utils import smooth, find_nearest_value_index, get_local_maximas, print_return_value, pairwise
 
 
 class ImageParser:
@@ -102,12 +98,6 @@ class ImageParser:
 
     @print_return_value
     def get_matrix(self, img, rows, columns):
-
-        def pairwise(iterable):
-            "s -> (s0,s1), (s1,s2), (s2, s3), ..."
-            a, b = tee(iterable)
-            next(b, None)
-            return zip(a, b)
 
         def cells(img, rows, columns):
             for row, (left, right) in enumerate(pairwise(rows)):
