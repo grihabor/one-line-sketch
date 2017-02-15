@@ -115,18 +115,33 @@ class ImageParser:
         print('cell_size =', cell_size)
         padding = 3
 
-        def pad_array(arr, padding, size):
-            left = [arr[0] - i * size for i in range(1, padding + 1)]
-            right = [arr[-1] + i * size for i in range(1, padding + 1)]
-            return np.array(left + list(arr) + right, dtype=np.int32)
+        def pad_array_left(arr, padding, size):
+            left = np.array([arr[0] - i * size for i in range(1, padding + 1)], dtype=np.int32)
+            return np.append(left, arr)
 
-        #rows = pad_array(rows, 3, cell_size)
-        columns = pad_array(columns, 3, cell_size)  # TODO: fix, this might fail
+        def pad_array_right(arr, padding, size):
+            right = np.array([arr[-1] + i * size for i in range(1, padding + 1)], dtype=np.int32)
+            return np.append(arr, right)
 
-        cell_types = np.zeros((len(columns)-1, len(rows)-1))
+        first_row_zero = False
+        last_row_zero = False
+        while True:
+            cell_types = np.zeros((len(columns)-1, len(rows)-1))
+            for row, column, cell in cells(img, rows, columns):
+                cell_types[column, row] = cell_type(cell)
 
-        for row, column, cell in cells(img, rows, columns):
-            cell_types[column, row] = cell_type(cell)
+            if np.all(cell_types[0] == 0):
+                first_row_zero = True
+            if np.all(cell_types[-1] == 0):
+                last_row_zero = True
+
+            if last_row_zero and first_row_zero:
+                break
+
+            if not first_row_zero:
+                columns = pad_array_left(columns, 1, cell_size)
+            if not last_row_zero:
+                columns = pad_array_right(columns, 1, cell_size)
 
         return cell_types
 
