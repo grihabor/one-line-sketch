@@ -1,5 +1,5 @@
 from itertools import tee
-
+from bisect import bisect_left
 import scipy
 from scipy.signal import argrelextrema
 from skimage.color import rgb2gray
@@ -119,12 +119,7 @@ class ImageParser:
             #plt.imshow(cell, cmap='gray')
             #plt.show()
             avg_intensity = np.mean(cell)
-            if avg_intensity > 0.9:
-                return 0
-            elif avg_intensity > 0.7:
-                return 1
-            else:
-                return 2
+            return 2 - bisect_left([0.7, 0.9], avg_intensity)
 
         cell_size = np.mean(rows[1:]-rows[:-1])
         print('cell_size =', cell_size)
