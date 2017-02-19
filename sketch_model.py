@@ -1,10 +1,11 @@
-from threading import Thread
-
 import networkx as nx
 import matplotlib.pyplot as plt
-import pylab
 
 from image_parser import ImageParser
+
+
+class SolutionError(BaseException):
+    pass
 
 
 class Cell:
@@ -50,7 +51,7 @@ class SketchModel:
             self.height = height
             self.start_node = start_node
 
-    def solve(self):
+    def _find_path(self):
         aux_graph = AuxiliaryGraph(self.graph)
         self.removed_edges_list = []
 
@@ -80,12 +81,19 @@ class SketchModel:
             aux_graph.restore_last_node()
             return False
 
-        print(dfs(self.start_node))
-        print(path)
-        solution = nx.Graph()
-        solution.add_path(path)
-        solution.node[self.start_node]['color'] = 'r'
-        self.solution = solution
+        return path if dfs(self.start_node) else None
+
+    def solve(self):
+
+        path = self._find_path()
+        if path:
+            print(path)
+            solution = nx.Graph()
+            solution.add_path(path)
+            solution.node[self.start_node]['color'] = 'r'
+            self.solution = solution
+        else:
+            raise SolutionError('Failed to solve the sketch', ' - bad input', ' - parse fail')
 
     @classmethod
     def from_matrix(cls, matrix):
