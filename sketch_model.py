@@ -4,6 +4,8 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import pylab
 
+from image_parser import ImageParser
+
 
 class Cell:
     def __init__(self, left, top, right, bottom, status=0):
@@ -144,5 +146,7 @@ class SketchModel:
 
     @classmethod
     def from_image(cls, filename):
-        pass
+        img_parser = ImageParser()
+        img_parser.parse(filename)
+        return SketchModel.from_matrix(img_parser.matrix)
 
