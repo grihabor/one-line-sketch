@@ -81,7 +81,7 @@ class ImageParser:
         plt.subplot(221)
         rows = self._get_rows(grayscale_img, True)
 
-        cropped_grayscale = grayscale_img[rows[0] - self.threshold() : rows[-1] + self.threshold(), :]
+        cropped_grayscale = grayscale_img[int(rows[0] - self.threshold()): int(rows[-1] + self.threshold()), :]
 
         plt.subplot(222)
         plt.imshow(cropped_grayscale, cmap='gray')
@@ -89,7 +89,9 @@ class ImageParser:
         plt.subplot(223)
         columns = self._get_columns(cropped_grayscale, True)
 
-        self._matrix = self.get_matrix(cropped_grayscale, rows - rows[0] + self.threshold(), columns)
+        rows = (rows - rows[0] + self.threshold()).astype(np.int)
+        columns = columns.astype(np.int)
+        self._matrix = self.get_matrix(cropped_grayscale, rows, columns)
 
         plt.subplot(224)
         plt.imshow(self.img)

@@ -39,7 +39,6 @@ class AuxiliaryGraph:
 
         leaves_count = sum(1 for node in self.graph.nodes_iter()
                            if self.graph.degree(node) == 1)
-        print(connected_components_count, leaves_count)
         return connected_components_count == 1 and leaves_count <= 2
 
 
@@ -50,6 +49,7 @@ class SketchModel:
             self.width = width
             self.height = height
             self.start_node = start_node
+        self.solution = None
 
     def _find_path(self):
         aux_graph = AuxiliaryGraph(self.graph)
@@ -87,7 +87,6 @@ class SketchModel:
 
         path = self._find_path()
         if path:
-            print(path)
             solution = nx.Graph()
             solution.add_path(path)
             solution.node[self.start_node]['color'] = 'r'
@@ -124,6 +123,8 @@ class SketchModel:
                 for node in graph.nodes()}
 
     def draw(self):
+        if not self.solution:
+            raise SolutionError('First solve the sketch: solution not found')
         self._draw([self.graph, self.solution])
 
     def _draw(self, graphs, filename=None):
