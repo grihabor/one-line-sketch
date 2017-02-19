@@ -16,6 +16,32 @@ class Cell:
         self.status = status
 
 
+class AuxiliaryGraph:
+    def __init__(self, graph: nx.Graph):
+        self.graph = graph.copy()
+        self.removed_edges = []
+        self.removed_nodes = []
+
+    def remove_node(self, node):
+        removed_edges = self.graph.edges([node])
+        self.graph.remove_edges_from(removed_edges)
+        self.graph.remove_node(node)
+        self.removed_edges.append(removed_edges)
+        self.removed_nodes.append(node)
+
+    def restore_last_node(self):
+        self.graph.add_edges_from(self.removed_edges.pop())
+        self.graph.node[self.removed_nodes.pop()]['color'] = 'b'
+
+    def ok_condition(self):
+        connected_components_count = nx.number_connected_components(self.graph)
+
+        leaves_count = sum(1 for node in self.graph.nodes_iter()
+                           if self.graph.degree(node) == 1)
+        print(connected_components_count, leaves_count)
+        return connected_components_count == 1 and leaves_count <= 2
+
+
 class SketchModel:
     def __init__(self, graph : nx.Graph, start_node=None, width=None, height=None):
         self.graph = graph
@@ -24,40 +50,23 @@ class SketchModel:
             self.height = height
             self.start_node = start_node
 
-    def _dup_delete_node(self, node):
-        removed_edges = self.dup_graph.edges([node])
-        # print(removed_edges)
-        self.dup_graph.remove_edges_from(removed_edges)
-        self.dup_graph.remove_node(node)
-        self.removed_edges_list.append(removed_edges)
-
-    def _dup_restore_node(self, cur_node):
-        self.dup_graph.add_edges_from(self.removed_edges_list.pop())
-        self.dup_graph.node[cur_node]['color'] = 'b'
-
     def solve(self):
-        node_count = 1
-        self.dup_graph = self.graph.copy()
+        aux_graph = AuxiliaryGraph(self.graph)
         self.removed_edges_list = []
 
+        node_count = 1
         path = []
 
         def dfs(cur_node):
-            nonlocal node_count
+            nonlocal node_count, path
 
             if node_count == self.graph.number_of_nodes():
                 path.append(cur_node)
                 return True
 
-            self._dup_delete_node(cur_node)
+            aux_graph.remove_node(cur_node)
 
-            number_connected_components = nx.number_connected_components(self.dup_graph)
-
-            leaves_count = sum(1 for node in self.dup_graph.nodes_iter()
-                               if self.dup_graph.degree(node) == 1)
-            print(number_connected_components, leaves_count)
-
-            if number_connected_components == 1 and leaves_count <= 2:
+            if aux_graph.ok_condition():
                 for neighbor_node in self.graph.neighbors_iter(cur_node):
                     if self.graph.node[neighbor_node]['color'] == 'b':
                         self.graph.node[neighbor_node]['color'] = 'r'
@@ -68,7 +77,7 @@ class SketchModel:
 
             self.graph.node[cur_node]['color'] = 'b'
             node_count -= 1
-            self._dup_restore_node(cur_node)
+            aux_graph.restore_last_node()
             return False
 
         print(dfs(self.start_node))
@@ -77,8 +86,6 @@ class SketchModel:
         solution.add_path(path)
         solution.node[self.start_node]['color'] = 'r'
         self.solution = solution
-
-        self.draw([self.graph, solution])
 
     @classmethod
     def from_matrix(cls, matrix):
@@ -108,7 +115,10 @@ class SketchModel:
         return {node: (node[1], self.height-1-node[0])
                 for node in graph.nodes()}
 
-    def draw(self, graphs, filename=None):
+    def draw(self):
+        self._draw([self.graph, self.solution])
+
+    def _draw(self, graphs, filename=None):
 
         def node_color(graph):
             return [node[1]['color'] if 'color' in node[1] else 'b'
@@ -118,8 +128,8 @@ class SketchModel:
 
         for i, graph in enumerate(graphs):
             plt.subplot(1, len(graphs), 1+i)
-            nx.draw(graph, self._pos(graph),
-                    node_color=node_color(graph))
+            nx.draw(graph, self._pos(graph), node_color=node_color(graph),
+                    node_size=150, width=3)
 
         if filename:
             plt.savefig(filename)
